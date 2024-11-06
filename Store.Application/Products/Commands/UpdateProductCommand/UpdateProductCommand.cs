@@ -1,8 +1,10 @@
-﻿namespace Store.Domain;
+﻿using MediatR;
 
-public class Product
+namespace Store.Application.Products.Commands.UpdateProductCommand;
+
+public class UpdateProductCommand:IRequest
 {
-    public int Id { get; set; }
+    public required int Id { get; set; }
     public required string Name { get; set; }
     public required string Description { get; set; }
     public required string UrlImage { get; set; }
