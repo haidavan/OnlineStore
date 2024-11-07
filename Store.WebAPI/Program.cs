@@ -1,3 +1,8 @@
+using Store.Persistence;
+using Store.Application;
+using Store.Application.Interfaces;
+using Store.Application.Mappings;
+using System.Reflection;
 
 namespace Store.WebAPI
 {
@@ -8,11 +13,27 @@ namespace Store.WebAPI
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
+            builder.Services.AddAutoMapper(config =>
+            {
+                config.AddProfile(new AssemblyMappingProfile(Assembly.GetExecutingAssembly()));
+                config.AddProfile(new AssemblyMappingProfile(typeof(IDbContext).Assembly));
+            });
+            builder.Services.AddPersistence(builder.Configuration);
+            builder.Services.AddApplication();
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyHeader();
+                    policy.AllowAnyMethod();
+                    policy.AllowAnyOrigin();
+                });
+            });
 
             var app = builder.Build();
 
@@ -21,12 +42,15 @@ namespace Store.WebAPI
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+                app.UseDeveloperExceptionPage();
             }
 
+            app.UseRouting();
             app.UseHttpsRedirection();
+            //app.UseAuthorization();
 
-            app.UseAuthorization();
 
+            app.UseCors("AllowAll");
 
             app.MapControllers();
 
